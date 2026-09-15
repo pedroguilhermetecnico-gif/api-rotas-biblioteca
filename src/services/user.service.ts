@@ -20,6 +20,13 @@ export class UserService {
     return { id, nome: "Usuário Encontrado", email: "buscado@email.com" };
   }
 
+  // 👇 NOVA FUNÇÃO ADICIONADA AQUI 👇
+  async findByEmail(email: string) {
+    return prisma.user.findUnique({
+      where: { email }
+    });
+  }
+
   async update(id: number, data: any) {
     // Simulando uma atualização
     return { id, ...data, message: "Usuário atualizado com sucesso (Simulado)" };
