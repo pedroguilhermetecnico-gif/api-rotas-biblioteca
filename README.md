@@ -1,29 +1,26 @@
-# API de Gestão de Biblioteca Digital
+# 📚 Biblioteca Digital API — BPW
 
-API RESTful desenvolvida em Node.js com TypeScript para gerenciamento de usuários, acervo de livros e controle de empréstimos.
+API RESTful para gestão de acervo literário com catálogo de livros em PDF, controle de leitores, sistema de empréstimo e devolução.
 
-## Tecnologias Utilizadas
+Desenvolvido para a disciplina **Banco de Dados, Programação e Servidores para WEB (BPW)**.
+**Professor:** Winnícius de Moura Alves
 
-- **Linguagem:** TypeScript
-- **Framework:** Express
-- **ORM:** Prisma
-- **Banco de Dados:** SQLite
-- **Autenticação:** JWT (JSON Web Token)
-- **Criptografia:** bcryptjs
-- **Validação de Dados:** Zod
+---
 
-## Arquitetura do Projeto
+## 🛠️ Tecnologias Utilizadas
 
-O projeto segue uma arquitetura em camadas bem definida:
+* **Linguagem:** Node.js com TypeScript
+* **Framework Web:** Express
+* **Banco de Dados & ORM:** MySQL + Prisma ORM
+* **Upload de Arquivos:** Multer (PDF)
+* **Autenticação:** JWT (JSON Web Token) + Bcrypt
 
-- `src/controllers`: Responsável pelo recebimento das requisições e respostas HTTP.
-- `src/services`: Contém as regras de negócio e comunicação com o banco via Prisma.
-- `src/models`: Schemas de validação Zod e tipagens.
-- `src/routes`: Mapeamento e proteção de endpoints.
-- `src/middlewares`: Middlewares de validação de token JWT.
+---
 
-## Como Executar o Projeto
+## 🚀 Como Executar o Projeto
 
-1. Clone o repositório e instale as dependências:
-   ```bash
-   npm install
+### 1. Clonar o Repositório e Instalar Dependências
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd api-rotas-biblioteca
+npm install
