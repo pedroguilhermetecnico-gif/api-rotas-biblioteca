@@ -1,45 +1,31 @@
-import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+dotenv.config(); // OBRIGATÓRIO: Carrega as variáveis do .env no topo!
 
-const prisma = new PrismaClient();
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
 
-export class UserService {
-  public async findByEmail(email: string) {
-    return await prisma.user.findUnique({
-      where: { email },
-    });
-  }
+import userRoutes from './routes/user.routes';
+import livroRoutes from './routes/livro.routes';
+import emprestimoRoutes from './routes/emprestimo.routes';
 
-  public async findById(id: string) {
-    return await prisma.user.findUnique({
-      where: { id },
-      select: { id: true, nome: true, email: true },
-    });
-  }
+const app = express();
 
-  public async register(data: { nome: string; email: string; senha: string }) {
-    return await prisma.user.create({
-      data,
-      select: { id: true, nome: true, email: true },
-    });
-  }
+app.use(cors());
+app.use(express.json());
 
-  public async getAll() {
-    return await prisma.user.findMany({
-      select: { id: true, nome: true, email: true },
-    });
-  }
+const uploadFolder = process.env.UPLOAD_DIR || 'uploads';
+app.use('/uploads', express.static(path.resolve(uploadFolder)));
 
-  public async update(id: string, data: { nome?: string; email?: string; senha?: string }) {
-    return await prisma.user.update({
-      where: { id },
-      data,
-      select: { id: true, nome: true, email: true },
-    });
-  }
+// Rotas da aplicação
+app.use(userRoutes);
+app.use('/books', livroRoutes);
+app.use('/livros', livroRoutes);
+app.use('/borrowings', emprestimoRoutes);
+app.use('/emprestimos', emprestimoRoutes);
 
-  public async delete(id: string) {
-    return await prisma.user.delete({
-      where: { id },
-    });
-  }
-}
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`[express] Server running on http://localhost:${PORT}`);
+});
