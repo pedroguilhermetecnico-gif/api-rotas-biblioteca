@@ -3,9 +3,10 @@ import { EmprestimoController } from '../controllers/emprestimo.controller';
 import { verificarToken } from '../middlewares/auth.middleware';
 
 const router = Router();
-const emprestimoController = new EmprestimoController();
+const controller = new EmprestimoController();
 
-router.post('/emprestimos', verificarToken, emprestimoController.create);
-router.get('/emprestimos', verificarToken, emprestimoController.findAll);
+router.post('/', verificarToken, (req, res) => controller.create(req, res));
+router.get('/', (req, res) => controller.getAll(req, res));
+router.patch('/:id/return', (req, res) => controller.returnBook(req, res));
 
 export default router;

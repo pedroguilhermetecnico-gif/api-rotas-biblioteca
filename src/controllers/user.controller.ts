@@ -1,82 +1,114 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { UserService } from '../services/user.service';
-import { registerUserSchema, loginUserSchema, updateUserSchema } from '../models/user.model';
 
 const userService = new UserService();
 
 export class UserController {
-  // POST /users/register
-  async register(req: Request, res: Response) {
+  public async register(req: Request, res: Response): Promise<Response> {
     try {
-      const data = registerUserSchema.parse(req.body);
-      const userExists = await userService.findByEmail(data.email);
+      const { nome, email, senha } = req.body;
+
+      if (!nome || !email || !senha) {
+        return res.status(400).json({ error: 'Preencha todos os campos.' });
+      }
+
+      const userExists = await userService.findByEmail(email);
       if (userExists) {
         return res.status(400).json({ error: 'E-mail já cadastrado.' });
       }
-      const user = await userService.register(data);
-      res.status(201).json(user);
+
+      const hashedPassword = await bcrypt.hash(senha, 10);
+      const user = await userService.register({
+        nome,
+        email,
+        senha: hashedPassword,
+      });
+
+      return res.status(201).json(user);
     } catch (error: any) {
-      res.status(400).json({ error: error.errors || error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // POST /users/login
-  async login(req: Request, res: Response) {
+  public async login(req: Request, res: Response): Promise<Response> {
     try {
-      const data = loginUserSchema.parse(req.body);
-      const user = await userService.findByEmail(data.email);
+      const { email, senha } = req.body;
+
+      if (!email || !senha) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+      }
+
+      const user = await userService.findByEmail(email);
       if (!user) {
         return res.status(401).json({ error: 'Credenciais inválidas.' });
       }
-      const validPassword = await bcrypt.compare(data.senha, user.senha);
-      if (!validPassword) {
+
+      const isValidPassword = await bcrypt.compare(senha, user.senha);
+      if (!isValidPassword) {
         return res.status(401).json({ error: 'Credenciais inválidas.' });
       }
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET || 'secret',
-        { expiresIn: '1d' }
-      );
-      res.json({ token, user: { id: user.id, nome: user.nome, email: user.email } });
+
+      const secret = process.env.JWT_SECRET || 'secret';
+      const token = jwt.sign({ id: user.id, email: user.email }, secret, {
+        expiresIn: '1d',
+      });
+
+      return res.status(200).json({ token });
     } catch (error: any) {
-      res.status(400).json({ error: error.errors || error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // GET /users/me
-  async getProfile(req: Request, res: Response) {
+  public async getProfile(req: Request, res: Response): Promise<Response> {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user?.id;
       const user = await userService.findById(userId);
-      if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-      res.json(user);
+
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+      }
+
+      return res.status(200).json(user);
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // PUT /users/:id
-  async update(req: Request, res: Response) {
+  public async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const id = Number(req.params.id);
-      const data = updateUserSchema.parse(req.body);
+      const users = await userService.getAll();
+      return res.status(200).json(users);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  public async update(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      const { nome, email, senha } = req.body;
+
+      const data: any = {};
+      if (nome) data.nome = nome;
+      if (email) data.email = email;
+      if (senha) data.senha = await bcrypt.hash(senha, 10);
+
       const updatedUser = await userService.update(id, data);
-      res.json(updatedUser);
+      return res.status(200).json(updatedUser);
     } catch (error: any) {
-      res.status(400).json({ error: error.errors || error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // DELETE /users/:id
-  async delete(req: Request, res: Response) {
+  public async delete(req: Request, res: Response): Promise<Response> {
     try {
-      const id = Number(req.params.id);
+      const { id } = req.params;
       await userService.delete(id);
-      res.status(200).json({ message: 'Usuário removido com sucesso' });
+      return res.status(200).json({ message: 'Usuário deletado com sucesso.' });
     } catch (error: any) {
-      res.status(400).json({ error: 'Erro ao remover usuário ou ID inexistente' });
+      return res.status(500).json({ error: error.message });
     }
   }
 }

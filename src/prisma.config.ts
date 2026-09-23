@@ -1,7 +1,3 @@
-import { definePrismaConfig } from "prisma/config";
+import { PrismaClient } from '@prisma/client';
 
-export default definePrismaConfig({
-  skills: {
-    agents: ["claude", "cursor", "agents", "devin"],
-  },
-});
+export const prisma = new PrismaClient();

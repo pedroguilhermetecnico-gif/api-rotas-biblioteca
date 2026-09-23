@@ -1,19 +1,43 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, StatusLivro } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export interface CreateLivroDTO {
+  titulo: string;
+  autor: string;
+  ano: number;
+  categoria: string;
+  pdfUrl: string;
+}
+
 export class LivroService {
-  async create(data: { titulo: string; dataPublicacao: string; nomeArquivo: string }) {
-    return prisma.livro.create({
+  public async create(data: CreateLivroDTO) {
+    return await prisma.livro.create({
       data: {
         titulo: data.titulo,
-        dataPublicacao: new Date(data.dataPublicacao),
-        nomeArquivo: data.nomeArquivo
-      }
+        autor: data.autor,
+        ano: Number(data.ano),
+        categoria: data.categoria,
+        pdfUrl: data.pdfUrl,
+        status: StatusLivro.DISPONIVEL,
+      },
     });
   }
 
-  async findAll() {
-    return prisma.livro.findMany();
+  public async getAll(search?: string, categoria?: string) {
+    const where: any = {};
+
+    if (categoria) {
+      where.categoria = { equals: categoria };
+    }
+
+    if (search) {
+      where.OR = [
+        { titulo: { contains: search } },
+        { autor: { contains: search } },
+      ];
+    }
+
+    return await prisma.livro.findMany({ where });
   }
 }

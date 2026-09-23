@@ -7,33 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum StatusLivro {
+  DISPONIVEL
+  ALUGADO
+}
+
+enum StatusEmprestimo {
+  ALUGADO
+  DEVOLVIDO
+}
+
 model User {
-  id          Int          @id @default(autoincrement())
+  id          String       @id @default(uuid())
   nome        String
   email       String       @unique
-  role        String       @default("USER")
   senha       String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   emprestimos Emprestimo[]
 }
 
 model Livro {
-  id             Int          @id @default(autoincrement())
-  titulo         String
-  autor          String?
-  categoria      String?
-  dataPublicacao DateTime?
-  nomeArquivo    String?
-  disponivel     Boolean      @default(true)
-  emprestimos    Emprestimo[]
+  id          String       @id @default(uuid())
+  titulo      String
+  autor       String
+  ano         Int
+  categoria   String
+  pdfUrl      String
+  status      StatusLivro  @default(DISPONIVEL)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  emprestimos Emprestimo[]
 }
 
 model Emprestimo {
-  id             Int       @id @default(autoincrement())
-  usuarioId      Int
-  livroId        Int
-  status         String    @default("PENDENTE")
-  dataEmprestimo DateTime  @default(now())
-  dataDevolucao  DateTime?
+  id             String           @id @default(uuid())
+  usuarioId      String
+  livroId        String
+  dataEmprestimo DateTime         @default(now())
+  dataDevolucao  DateTime
+  devolvidoEm    DateTime?
+  status         StatusEmprestimo @default(ALUGADO)
 
   usuario User  @relation(fields: [usuarioId], references: [id])
   livro   Livro @relation(fields: [livroId], references: [id])

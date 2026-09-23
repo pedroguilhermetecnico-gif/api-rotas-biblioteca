@@ -1,24 +1,45 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import userRoutes from './routes/user.routes';
-import livroRoutes from './routes/livro.routes';
-import emprestimoRoutes from './routes/emprestimo.routes';
+import { PrismaClient } from '@prisma/client';
 
-dotenv.config();
+const prisma = new PrismaClient();
 
-const app = express();
+export class UserService {
+  public async findByEmail(email: string) {
+    return await prisma.user.findUnique({
+      where: { email },
+    });
+  }
 
-app.use(cors());
-app.use(express.json());
+  public async findById(id: string) {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, nome: true, email: true },
+    });
+  }
 
-// Registro de todas as rotas da API
-app.use(userRoutes);
-app.use(livroRoutes);
-app.use(emprestimoRoutes);
+  public async register(data: { nome: string; email: string; senha: string }) {
+    return await prisma.user.create({
+      data,
+      select: { id: true, nome: true, email: true },
+    });
+  }
 
-const PORT = 3000;
+  public async getAll() {
+    return await prisma.user.findMany({
+      select: { id: true, nome: true, email: true },
+    });
+  }
 
-app.listen(PORT, () => {
-  console.log(`[express] Server running on http://localhost:${PORT}`);
-});
+  public async update(id: string, data: { nome?: string; email?: string; senha?: string }) {
+    return await prisma.user.update({
+      where: { id },
+      data,
+      select: { id: true, nome: true, email: true },
+    });
+  }
+
+  public async delete(id: string) {
+    return await prisma.user.delete({
+      where: { id },
+    });
+  }
+}
