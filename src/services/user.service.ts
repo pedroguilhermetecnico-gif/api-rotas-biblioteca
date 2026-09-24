@@ -11,7 +11,7 @@ export class UserService {
 
   public async findById(id: string) {
     return await prisma.user.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       select: { id: true, nome: true, email: true },
     });
   }
@@ -31,7 +31,7 @@ export class UserService {
 
   public async update(id: string, data: { nome?: string; email?: string; senha?: string }) {
     return await prisma.user.update({
-      where: { id },
+      where: { id: Number(id) },
       data,
       select: { id: true, nome: true, email: true },
     });
@@ -39,7 +39,7 @@ export class UserService {
 
   public async delete(id: string) {
     return await prisma.user.delete({
-      where: { id },
+      where: { id: Number(id) }, // Linha 42 corrigida!
     });
   }
 }

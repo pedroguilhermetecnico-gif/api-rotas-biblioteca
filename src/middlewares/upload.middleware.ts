@@ -1,29 +1,28 @@
-import multer from 'multer';
-import fs from 'fs';
+import multer from "multer";
+import crypto from "crypto";
 
-const uploadFolder = process.env.UPLOAD_DIR || 'uploads';
-
-if (!fs.existsSync(uploadFolder)) {
-  fs.mkdirSync(uploadFolder, { recursive: true });
-}
+const uploadFolder = process.env.UPLOAD_DIR || "uploads";
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadFolder);
-  },
+  destination: uploadFolder,
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
+    const fileHash = crypto.randomBytes(10).toString("hex");
+    const fileName = `${fileHash}-${file.originalname}`;
+    return cb(null, fileName);
   },
 });
 
 export const uploadPDF = multer({
   storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Apenas arquivos PDF são permitidos!'));
-    }
+  limits: {
+    fileSize: 20 * 1024 * 1024, 
+  },
+});
+
+export const uploadMultiple = multer({
+  storage,
+  limits: {
+    fileSize: 20 * 1024 * 1024, 
+    files: 4,                  
   },
 });

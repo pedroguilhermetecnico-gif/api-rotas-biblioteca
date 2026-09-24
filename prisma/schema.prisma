@@ -52,3 +52,13 @@ model Emprestimo {
   usuario User  @relation(fields: [usuarioId], references: [id])
   livro   Livro @relation(fields: [livroId], references: [id])
 }
+
+model Image {
+  id        String   @id @default(uuid())
+  filename  String
+  mimetype  String
+  url       String
+  createdAt DateTime @default(now())
+
+  @@map("images")
+}
